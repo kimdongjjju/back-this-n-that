@@ -1,0 +1,7 @@
+server:
+  servlet:
+    context-path: /thisnthat-api
+
+spring:
+  application:
+    name: thisnthat-api
