@@ -14,5 +14,7 @@ public class DongStargramController {
     @PostMapping("/upload")
     public ResponseEntity<Void> createPost() {
         return ResponseEntity.ok().build();
+        
     }
+
 }

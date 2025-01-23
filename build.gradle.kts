@@ -1,15 +1,9 @@
 plugins {
 	java
-	id("org.springframework.boot") version "3.3.5"
-	id("io.spring.dependency-management") version "1.1.6"
+	`java-library`
+	id("org.springframework.boot") version "3.3.5" apply false
+	id("io.spring.dependency-management") version "1.1.6" apply false
 }
-
-
-// 실제 실행 환경의 Java 버전은 제어(x) 설정
-java {
-	sourceCompatibility = JavaVersion.VERSION_21
-}
-
 
 allprojects {
 	group = "com.djukim"
@@ -20,18 +14,27 @@ allprojects {
 }
 
 subprojects {
-	var lombokVersion = "1.18.30"
+	val lombokVersion = "1.18.30"
 
 	apply(plugin = "idea")
 	apply(plugin = "java")
 	apply(plugin = "io.spring.dependency-management")
 
+	configure<io.spring.gradle.dependencymanagement.dsl.DependencyManagementExtension> {
+		imports {
+			mavenBom("org.springframework.boot:spring-boot-dependencies:3.3.5")
+		}
+	}
+
 	dependencies {
+
 		testImplementation("org.springframework.boot:spring-boot-starter-test")
 
 		// lombok
 		compileOnly("org.projectlombok:lombok")
 		annotationProcessor("org.projectlombok:lombok")
+		testAnnotationProcessor("org.projectlombok:lombok:$lombokVersion")
+		testImplementation("org.projectlombok:lombok:$lombokVersion")
 	}
 
 	tasks.test {
@@ -53,6 +56,10 @@ var bootprojects = allprojects.filter {
 var batchprojects = allprojects.filter {
 	it.findProperty("type").toString().contains("batch")
 }
+var libprojects = allprojects.filter {
+	it.findProperty("type").toString().contains("lib")
+}
+
 
 configure(apiprojects) {
 	dependencies {
@@ -63,6 +70,15 @@ configure(apiprojects) {
 configure(bootprojects) {
 	apply(plugin = "org.springframework.boot")
 
+	tasks.getByName<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
+		enabled = false
+		mainClass.set("com.djukim.thisnthat.ThisnthatApiApplication")
+	}
+
+	tasks.getByName<Jar>("jar") {
+		enabled = true
+	}
+
 	dependencies {
 		implementation("org.springframework.boot:spring-boot-starter")
 		annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
@@ -70,7 +86,20 @@ configure(bootprojects) {
 	}
 }
 
+configure(libprojects) {
+	apply(plugin = "org.springframework.boot")
+	apply(plugin = "java-library")
 
+
+	dependencies {
+		implementation("org.springframework.boot:spring-boot-starter-web")
+	}
+
+	val bootJar: org.springframework.boot.gradle.tasks.bundling.BootJar by tasks
+	bootJar.enabled = false
+	val jar: Jar by tasks
+	jar.enabled = true
+}
 
 
 
