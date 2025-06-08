@@ -27,16 +27,25 @@ public class ImageConsumerConfig {
 
     private final KafkaProperties kafkaProperties;
     private final KafkaTemplate<String, String> imageKafkaTemplate;
+    private final int FETCH_MAX_BYTES_10MB = 10 * 1024 * 1024;
+    private final int MAX_PARTITION_FETCH_BYTES_10MB = 10 * 1024 * 1024;
+
 
     @Bean
     public ConsumerFactory<String, String> consumerFactory() {
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getBootstrapServers());
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "basic-consumer-group");
+
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
+
+        props.put(ConsumerConfig.FETCH_MAX_BYTES_CONFIG, FETCH_MAX_BYTES_10MB);
+        props.put(ConsumerConfig.MAX_PARTITION_FETCH_BYTES_CONFIG, MAX_PARTITION_FETCH_BYTES_10MB);
+        props.put(ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG, 600000);
         return new DefaultKafkaConsumerFactory<>(props);
     }
 
@@ -62,7 +71,7 @@ public class ImageConsumerConfig {
     public DefaultErrorHandler defaultErrorHandler() {
         DefaultErrorHandler errorHandler =
                 new DefaultErrorHandler(deadLetterPublishingRecoverer(), new FixedBackOff(15000L, 2));
-
+        errorHandler.setAckAfterHandle(false);
         errorHandler.setRetryListeners(
                 (record, ex, deliveryAttempt) -> {
                     log.error(
@@ -88,6 +97,9 @@ public class ImageConsumerConfig {
         factory.setCommonErrorHandler(defaultErrorHandler());
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
         factory.setConcurrency(3);
+        factory.getContainerProperties().setIdleBetweenPolls(120000); // 2분 동안 유휴 대기
+        factory.getContainerProperties().setPollTimeout(120000); // poll()에서 최대 2분 대기
+
         factory.getContainerProperties().setLogContainerConfig(true);
         return factory;
     }
