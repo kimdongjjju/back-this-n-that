@@ -71,6 +71,13 @@ public class ImageConsumerConfig {
     public DefaultErrorHandler defaultErrorHandler() {
         DefaultErrorHandler errorHandler =
                 new DefaultErrorHandler(deadLetterPublishingRecoverer(), new FixedBackOff(15000L, 2));
+//        errorHandler.addNotRetryableExceptions(
+//                org.apache.kafka.common.errors.RebalanceInProgressException.class,
+//                org.apache.kafka.common.errors.WakeupException.class,
+//                org.apache.kafka.common.errors.DisconnectException.class,
+//                org.apache.kafka.common.errors.TimeoutException.class,
+//                org.apache.kafka.common.errors.InterruptException.class
+//        );
         errorHandler.setAckAfterHandle(false);
         errorHandler.setRetryListeners(
                 (record, ex, deliveryAttempt) -> {

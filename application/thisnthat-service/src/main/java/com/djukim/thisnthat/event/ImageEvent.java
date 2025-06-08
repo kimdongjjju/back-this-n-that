@@ -13,7 +13,8 @@ public class ImageEvent {
 
     @EventListener
     public void eventConsumerImage(ImageConsumerEvent event) throws InterruptedException {
-        Thread.sleep(60000);
+        log.info("event consumer image");
+        Thread.sleep(180000);
         log.info("비즈니스 컨슈머 로직 처리 : {}",event.toString());
     }
 }
