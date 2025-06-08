@@ -9,5 +9,6 @@ import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 public class ThisnthatApiApplication {
     public static void main(String[] args) {
         SpringApplication.run(ThisnthatApiApplication.class, args);
+
     }
 }

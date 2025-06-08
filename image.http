@@ -1,0 +1,12 @@
+###  request to example server
+POST http://localhost:8081/thisnthat-api/image
+Content-Type: application/json
+
+{
+  "requestId": "req-001"
+}
+
+
+###
+GET http://localhost:8081/thisnthat-api/image-health
+

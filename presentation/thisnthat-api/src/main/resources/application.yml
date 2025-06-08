@@ -1,7 +1,12 @@
 server:
   servlet:
     context-path: /thisnthat-api
+  port: 8081
 
 spring:
   application:
     name: thisnthat-api
+
+  config:
+    import:
+      - kafka.yml
